@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        credits: ['"Playfair Display"', 'serif'],
+        credits: ['"Space Mono"', 'monospace'],
       },
     },
   },
