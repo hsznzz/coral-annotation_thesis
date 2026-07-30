@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../../api/services/authService.js';
 import { useAuth } from '../../context/AuthContext.jsx';
@@ -16,9 +16,14 @@ function LoginPage() {
   const navigate = useNavigate();
   const { profile } = useAuth();
 
-  if (profile) {
-    navigate('/dashboard');
-  }
+  // IMPORTANT: navigating during render (instead of in an effect) is unsafe —
+  // it can fire on a stale `profile` value and redirect back here right
+  // after a logout, making logout look like it does nothing.
+  useEffect(() => {
+    if (profile) {
+      navigate('/dashboard', { replace: true });
+    }
+  }, [profile, navigate]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

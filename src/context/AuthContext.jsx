@@ -39,8 +39,16 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = async () => {
-    await authService.logout();
-    setProfile(null);
+    try {
+      await authService.logout();
+    } catch (err) {
+      // Even if the network call fails (e.g. an already-expired session),
+      // don't leave the user stuck "logged in" in the UI — clear local
+      // state regardless so logout always visibly works.
+      console.error('Logout request failed, clearing local session anyway:', err);
+    } finally {
+      setProfile(null);
+    }
   };
 
   return (
