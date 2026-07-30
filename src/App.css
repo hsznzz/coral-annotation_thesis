@@ -1,0 +1,5 @@
+/* Intentionally empty — layout is handled entirely by Tailwind utility
+   classes on each page/component. This file previously carried leftover
+   Vite/React template styles (#root max-width + text-align: center) that
+   fought with Tailwind's centering, causing misaligned pages. Kept as an
+   empty file so the `import './App.css'` in App.jsx doesn't need touching. */
