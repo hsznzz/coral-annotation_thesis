@@ -57,7 +57,7 @@ function LoginPage() {
         {/* Left side: branding / description */}
         <div className="flex-1 text-center lg:text-left space-y-4">
           <p className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 px-3 py-1 text-xs font-medium text-emerald-300 border border-emerald-500/30">
-            Coral Bleaching Detection Phase 1
+            Coral Bleaching Detection Phase 2
           </p>
           <h1 className="text-3xl sm:text-4xl font-semibold leading-tight">
             Log in to the coral
@@ -68,6 +68,7 @@ function LoginPage() {
             Coral (LC), Partially Bleached (PB), Dead Coral (DC), and Dead
             Coral with Algae (DCA).
           </p>
+          <p className="text-xs text-slate-500">By Raiken Ladrera and Hestia Meizi Tibon</p>
         </div>
 
         {/* Right side: login card */}
