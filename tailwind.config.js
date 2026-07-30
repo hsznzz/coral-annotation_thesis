@@ -5,7 +5,11 @@ export default {
     './src/**/*.{js,jsx}',
   ],
   theme: {
-    extend: {},
+    extend: {
+      fontFamily: {
+        credits: ['"Playfair Display"', 'serif'],
+      },
+    },
   },
   plugins: [],
 }

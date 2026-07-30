@@ -68,7 +68,9 @@ function LoginPage() {
             Coral (LC), Partially Bleached (PB), Dead Coral (DC), and Dead
             Coral with Algae (DCA).
           </p>
-          <p className="text-xs text-slate-500">By Raiken Ladrera and Hestia Meizi Tibon</p>
+          <p className="font-credits font-bold italic text-sm text-emerald-300/90">
+            By Raiken Ladrera and Hestia Meizi Tibon
+          </p>
         </div>
 
         {/* Right side: login card */}
