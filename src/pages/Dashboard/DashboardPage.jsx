@@ -65,7 +65,7 @@ function DashboardPage() {
           <h1 className="text-2xl font-semibold text-slate-100">Welcome back, {displayName}</h1>
           <p className="text-sm text-slate-400">Here's where things stand with your coral annotations.</p>
         </div>
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Button variant="ghost" onClick={() => navigate('/history')}>
             View history
           </Button>
@@ -77,7 +77,7 @@ function DashboardPage() {
           <Button variant="ghost" onClick={handleLogout}>
             Log out
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {error && (

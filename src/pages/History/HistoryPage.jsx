@@ -267,12 +267,12 @@ function HistoryPage() {
           </p>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={() => navigate('/dashboard')}>
+          {/* <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             Dashboard
           </Button>
           <Button variant="ghost" onClick={() => navigate('/annotate')}>
             Back to annotating
-          </Button>
+          </Button> */}
         </div>
       </div>
 

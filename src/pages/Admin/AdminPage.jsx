@@ -264,7 +264,7 @@ function AdminPage() {
           <h1 className="text-2xl font-semibold text-slate-100">Annotation Review Dashboard</h1>
           <p className="text-sm text-slate-400">Signed in as {profile?.email}</p>
         </div>
-        <div className="flex gap-2">
+        {/* <div className="flex gap-2">
           <Button variant="ghost" onClick={() => navigate('/dashboard')}>
             Dashboard
           </Button>
@@ -277,7 +277,7 @@ function AdminPage() {
           <Button variant="ghost" onClick={handleLogout}>
             Log out
           </Button>
-        </div>
+        </div> */}
       </div>
 
       {error && (
