@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { patchesApi } from '../api/patchesApi.js';
 import { annotationsApi } from '../api/annotationsApi.js';
+import { useAuth } from '../context/AuthContext.jsx';
 
 /**
  * Orchestrates the core annotation workflow:
@@ -13,6 +14,8 @@ import { annotationsApi } from '../api/annotationsApi.js';
  *  - release the soft lock on a patch if the user navigates away unsaved
  */
 export function useAnnotationFlow() {
+  const { profile, isAdmin } = useAuth();
+
   const [currentPatch, setCurrentPatch] = useState(null);
   const [history, setHistory] = useState([]); // patches visited this session, oldest first
   const [historyIndex, setHistoryIndex] = useState(-1);
@@ -36,12 +39,14 @@ export function useAnnotationFlow() {
 
   const refreshProgress = useCallback(async () => {
     try {
-      const p = await patchesApi.getProgress();
+      const p = isAdmin
+        ? await patchesApi.getProgress()
+        : await patchesApi.getMyProgress(profile?.id);
       setProgress(p);
     } catch {
       // Progress is a nice-to-have; a failure here shouldn't block annotating.
     }
-  }, []);
+  }, [isAdmin, profile?.id]);
 
   const loadNextPatch = useCallback(async (skipPatchId = null) => {
     setLoading(true);

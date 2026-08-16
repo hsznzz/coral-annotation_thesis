@@ -93,23 +93,23 @@ export const patchesApi = {
       .from('patches')
       .select('*', { count: 'exact', head: true });
     if (totalError) throw new Error(`Failed to load progress: ${totalError.message}`);
-
+ 
     const { count: annotated, error: annotatedError } = await supabase
       .from('patches')
       .select('*', { count: 'exact', head: true })
       .eq('status', 'annotated');
     if (annotatedError) throw new Error(`Failed to load progress: ${annotatedError.message}`);
-
+ 
     const { data: labelRows, error: labelError } = await supabase
       .from('annotations')
       .select('label');
     if (labelError) throw new Error(`Failed to load label counts: ${labelError.message}`);
-
+ 
     const counts = { LC: 0, PB: 0, DC: 0, DCA: 0 };
     for (const row of labelRows || []) {
       if (counts[row.label] != null) counts[row.label] += 1;
     }
-
+ 
     return {
       total: total || 0,
       annotated: annotated || 0,
@@ -117,7 +117,57 @@ export const patchesApi = {
       counts,
     };
   },
-
+ 
+  /**
+   * Progress counters scoped to ONE annotator's own designated batch --
+   * how many patches were assigned to them via patches.assigned_annotator_id,
+   * how many of those they've already completed, and how many are still
+   * theirs to do. This is deliberately separate from getProgress() above:
+   * that one answers "how's the whole project doing", this one answers
+   * "how am I doing against MY quota" -- an annotator finishing their own
+   * 2,000 shouldn't still see "patches need a label" just because other
+   * annotators aren't done with theirs.
+   */
+  async getMyProgress(annotatorId) {
+    if (!annotatorId) {
+      return { total: 0, annotated: 0, remaining: 0, counts: { LC: 0, PB: 0, DC: 0, DCA: 0 } };
+    }
+ 
+    const { count: total, error: totalError } = await supabase
+      .from('patches')
+      .select('*', { count: 'exact', head: true })
+      .eq('assigned_annotator_id', annotatorId);
+    if (totalError) throw new Error(`Failed to load your assigned total: ${totalError.message}`);
+ 
+    const { count: annotated, error: annotatedError } = await supabase
+      .from('patches')
+      .select('*', { count: 'exact', head: true })
+      .eq('assigned_annotator_id', annotatorId)
+      .eq('status', 'annotated');
+    if (annotatedError) throw new Error(`Failed to load your progress: ${annotatedError.message}`);
+ 
+    // Scoped to labels THIS annotator has personally submitted -- matches
+    // getProgress()'s shape below, but filtered instead of project-wide, so
+    // ProgressBar.jsx can render either one with no changes to itself.
+    const { data: labelRows, error: labelError } = await supabase
+      .from('annotations')
+      .select('label')
+      .eq('annotator_id', annotatorId);
+    if (labelError) throw new Error(`Failed to load your label counts: ${labelError.message}`);
+ 
+    const counts = { LC: 0, PB: 0, DC: 0, DCA: 0 };
+    for (const row of labelRows || []) {
+      if (counts[row.label] != null) counts[row.label] += 1;
+    }
+ 
+    return {
+      total: total || 0,
+      annotated: annotated || 0,
+      remaining: (total || 0) - (annotated || 0),
+      counts,
+    };
+  },
+ 
   /**
    * MIGRATION NOTE: pre-R2 this exchanged a Supabase Storage key for a
    * signed URL. patches.storage_path is now already a full public R2 URL,
@@ -129,7 +179,7 @@ export const patchesApi = {
   async getPatchSignedUrl(storagePath) {
     return storagePath;
   },
-
+ 
   /**
    * Same story as getPatchSignedUrl. Note images.storage_path is currently
    * NULL for every row -- this batch only uploaded patches to R2, not full

@@ -283,7 +283,7 @@ function AnnotatePage() {
 
               {/* PROGRESS - TOP CENTER */}
               <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 w-64 sm:w-80 px-4 py-2 rounded-lg bg-slate-900/50 border border-slate-700/70 backdrop-blur-sm">
-                <ProgressBar progress={progress} compact />
+                <ProgressBar progress={progress} compact scopeLabel={isAdmin ? 'Project progress' : 'Your progress'} />
               </div>
 
               {/* PREVIOUS - BOTTOM LEFT */}

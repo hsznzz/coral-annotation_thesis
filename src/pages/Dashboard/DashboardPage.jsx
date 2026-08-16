@@ -19,8 +19,8 @@ function StatCard({ label, value, tone = 'text-slate-100' }) {
 function DashboardPage() {
   const navigate = useNavigate();
   const { profile, isAdmin, logout } = useAuth();
-
   const [progress, setProgress] = useState(null);
+  const [myProgress, setMyProgress] = useState(null);
   const [myCount, setMyCount] = useState(0);
   const [recent, setRecent] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -31,13 +31,14 @@ function DashboardPage() {
     setLoading(true);
     setError(null);
     try {
-      const [overallProgress, mine] = await Promise.all([
+      const [overallProgress, myAssigned, mine] = await Promise.all([
         patchesApi.getProgress(),
+        patchesApi.getMyProgress(profile.id),
         annotationsApi.listAnnotations({ annotatorId: profile.id, page: 0, pageSize: 5 }),
       ]);
       setProgress(overallProgress);
+      setMyProgress(myAssigned);
       setRecent(mine.rows);
-      setMyCount(mine.total);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -55,7 +56,7 @@ function DashboardPage() {
   };
 
   const displayName = profile?.first_name || profile?.email || 'there';
-  const remaining = progress?.remaining ?? 0;
+  const remaining = isAdmin ? (progress?.remaining ?? 0) : (myProgress?.remaining ?? 0);
   const readyToAnnotate = remaining > 0;
 
   return (
@@ -121,12 +122,29 @@ function DashboardPage() {
 
           {/* Stats */}
           <section>
-            <h2 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wide">Your progress</h2>
+            <h2 className="text-sm font-semibold text-slate-300 mb-3 uppercase tracking-wide">
+              {isAdmin ? 'Project progress' : 'Your progress'}
+            </h2>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <StatCard label="Your annotations" value={myCount} tone="text-emerald-400" />
-              <StatCard label="Overall annotated" value={progress?.annotated ?? 0} />
-              <StatCard label="Overall remaining" value={progress?.remaining ?? 0} />
-              <StatCard label="Overall total patches" value={progress?.total ?? 0} />
+              {isAdmin ? (
+                <>
+                  <StatCard label="Overall annotated" value={progress?.annotated ?? 0} tone="text-emerald-400" />
+                  <StatCard label="Overall remaining" value={progress?.remaining ?? 0} />
+                  <StatCard label="Overall total patches" value={progress?.total ?? 0} />
+                  <StatCard label="Your own annotations" value={myProgress?.annotated ?? 0} />
+                </>
+              ) : (
+                <>
+                  <StatCard label="Assigned to you" value={myProgress?.total ?? 0} />
+                  <StatCard label="You've completed" value={myProgress?.annotated ?? 0} tone="text-emerald-400" />
+                  <StatCard
+                    label="Remaining for you"
+                    value={myProgress?.remaining ?? 0}
+                    tone={readyToAnnotate ? 'text-amber-400' : 'text-emerald-400'}
+                  />
+                  <StatCard label="Project total" value={`${progress?.annotated ?? 0}/${progress?.total ?? 0}`} />
+                </>
+              )}
             </div>
           </section>
 

@@ -9,12 +9,17 @@ const LABEL_COLORS = {
  * Compact progress readout: total / annotated / remaining, plus a per-label
  * breakdown. Designed to sit in a small translucent panel over the image.
  */
-function ProgressBar({ progress, compact = false }) {
+function ProgressBar({ progress, compact = false, scopeLabel = null }) {
   const { total, annotated, remaining, counts } = progress;
   const pct = total > 0 ? Math.round((annotated / total) * 100) : 0;
-
+ 
   return (
     <div className={compact ? 'text-xs sm:text-sm' : 'text-sm'}>
+      {scopeLabel && (
+        <div className="text-[10px] sm:text-xs text-slate-500 uppercase tracking-wide mb-0.5">
+          {scopeLabel}
+        </div>
+      )}
       <div className="flex items-center justify-between gap-3 mb-1">
         <span className="text-slate-300">
           {annotated}/{total} annotated
@@ -39,5 +44,5 @@ function ProgressBar({ progress, compact = false }) {
     </div>
   );
 }
-
+ 
 export default ProgressBar;
