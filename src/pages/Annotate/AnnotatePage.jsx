@@ -15,7 +15,7 @@ import { ALL_LABELS, LABEL_TEXT, SHORTCUT_TO_LABEL } from '../../constants/label
 // in" the instant the page loads. Starting a little zoomed OUT (with room
 // to go even further out) gives a safe, comfortable overview by default,
 // centered in the viewport; annotators can still zoom in for detail.
-const DEFAULT_SCALE = 0.85;
+const DEFAULT_SCALE = 1;
 const MIN_SCALE = 0.4;
 const MAX_SCALE = 5;
 
@@ -238,16 +238,18 @@ function AnnotatePage() {
             <>
               {/* FULLSCREEN IMAGE, kept at a safe, centered viewing distance
                   (padding on all sides) instead of edge-to-edge */}
-              <div className="w-full h-full flex items-center justify-center p-6 sm:p-12">
+              <div className="absolute inset-0 z-0">
                 <TransformComponent
-                  wrapperClass="w-full h-full flex items-center justify-center"
-                  contentClass="max-w-[80vw] max-h-[75vh] flex items-center justify-center"
+                  wrapperClass="flex items-center justify-center"
+                  wrapperStyle={{ width: '100%', height: '100%' }}
+                  contentStyle={{ width: '100%', height: '100%' }}
                 >
                   {currentPatch && (
                     <img
                       src={currentPatch.imageUrl}
                       alt="Coral patch for annotation"
-                      className="max-w-[80vw] max-h-[75vh] w-auto h-auto object-contain"
+                      className="w-full h-full object-contain select-none"
+                      draggable={false}
                     />
                   )}
                 </TransformComponent>
@@ -305,8 +307,8 @@ function AnnotatePage() {
               </button>
 
               {/* LABELS - BOTTOM CENTER */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 w-full flex justify-center px-4">
-                <div className="px-4 py-3 rounded-2xl bg-slate-900/30 border border-slate-700/60 backdrop-blur-sm max-w-[95vw] sm:max-w-3xl w-full">
+              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex justify-center px-4 max-w-[95vw]">
+                <div className="px-3 py-2.5 rounded-2xl bg-slate-900/30 border border-slate-700/60 backdrop-blur-sm">
                   <LabelButtons disabled={saving} currentLabel={currentLabel} onSelect={handleLabel} />
                 </div>
               </div>

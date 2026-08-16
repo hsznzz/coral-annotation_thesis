@@ -9,20 +9,20 @@ import { ALL_LABELS } from '../../constants/labels.js';
  */
 function LabelButtons({ disabled = false, currentLabel = null, onSelect }) {
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+    <div className="flex flex-nowrap items-center gap-2 overflow-x-auto max-w-full">
       {ALL_LABELS.map((label) => {
         const isCurrent = currentLabel === label.key;
         return (
           <Button
             key={label.key}
-            size="lg"
-            className={`${label.color} w-full justify-center relative transition-transform ${
+            size="sm"
+            className={`${label.color} shrink-0 whitespace-nowrap justify-center relative transition-transform px-3 py-2 text-xs sm:text-sm ${
               isCurrent ? 'ring-4 ring-white/70 scale-[1.02]' : ''
             }`}
             disabled={disabled}
             onClick={() => onSelect && onSelect(label.key)}
           >
-            <span className="absolute left-2 top-1/2 -translate-y-1/2 text-[10px] font-mono opacity-70 border border-current rounded px-1">
+            <span className="mr-1.5 text-[10px] font-mono opacity-70 border border-current rounded px-1">
               {label.shortcut}
             </span>
             {label.text}
