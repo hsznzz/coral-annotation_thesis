@@ -1,23 +1,19 @@
 import { supabase } from './supabaseClient.js';
 
-const IMAGE_BUCKET = 'coral-images';
-const PATCH_BUCKET = 'coral-patches';
-const SIGNED_URL_TTL_SECONDS = 60 * 10; // 10 minutes
-
 /**
- * Attach a short-lived signed URL (patches are stored in a private bucket)
- * plus the parent image's metadata to a raw patch row.
+ * Attach the patch's already-public R2 URL, plus the parent image's
+ * metadata, to a raw patch row.
+ *
+ * MIGRATION NOTE (Cloudflare R2 cutover): patches.storage_path used to be a
+ * Supabase Storage object key that had to be exchanged for a short-lived
+ * signed URL via supabase.storage.from(bucket).createSignedUrl(). Since the
+ * R2 migration, upload_to_r2_and_populate_supabase.py writes storage_path as
+ * the FULL public r2.dev URL directly -- there's no signing step, no bucket
+ * lookup, and no expiry to manage. Using it as-is here is the correct
+ * behavior for a public bucket, not a shortcut.
  */
 async function hydratePatch(patch) {
   if (!patch) return null;
-
-  const { data: signed, error: signError } = await supabase.storage
-    .from(PATCH_BUCKET)
-    .createSignedUrl(patch.storage_path, SIGNED_URL_TTL_SECONDS);
-
-  if (signError) {
-    throw new Error(`Failed to create signed URL for patch: ${signError.message}`);
-  }
 
   const { data: image, error: imageError } = await supabase
     .from('images')
@@ -33,7 +29,7 @@ async function hydratePatch(patch) {
     id: patch.id,
     imageId: patch.image_id,
     patchIndex: patch.patch_index,
-    imageUrl: signed.signedUrl,
+    imageUrl: patch.storage_path,
     x: patch.x,
     y: patch.y,
     width: patch.width,
@@ -52,10 +48,12 @@ async function hydratePatch(patch) {
 export const patchesApi = {
   /**
    * Atomically claim the next unannotated (and unlocked, or stale-locked)
-   * patch for the current user. Returns null if none are left.
+   * patch for the current user. Per-annotator assignment is enforced
+   * server-side inside the claim_next_patch RPC via
+   * patches.assigned_annotator_id -- this function doesn't need to know or
+   * care which annotator it's talking to. Returns null if none are left.
    * @param {string|null} excludePatchId - when skipping a patch without
-   *   saving it, pass its id so the RPC won't just hand it straight back
-   *   (it would otherwise still be the lowest-index patch locked to you).
+   *   saving it, pass its id so the RPC won't just hand it straight back.
    */
   async claimNextPatch(excludePatchId = null) {
     const { data, error } = await supabase.rpc('claim_next_patch', {
@@ -120,21 +118,24 @@ export const patchesApi = {
     };
   },
 
-  /** Signed URL for a given patch's storage_path — used by the admin bulk image export. */
+  /**
+   * MIGRATION NOTE: pre-R2 this exchanged a Supabase Storage key for a
+   * signed URL. patches.storage_path is now already a full public R2 URL,
+   * so there's nothing left to sign -- kept as a passthrough only so any
+   * existing caller (you mentioned an admin bulk image export) doesn't
+   * break. If you share that file, I can remove this indirection entirely
+   * instead of leaving a shim.
+   */
   async getPatchSignedUrl(storagePath) {
-    const { data, error } = await supabase.storage
-      .from(PATCH_BUCKET)
-      .createSignedUrl(storagePath, SIGNED_URL_TTL_SECONDS);
-    if (error) throw new Error(`Failed to sign patch URL: ${error.message}`);
-    return data.signedUrl;
+    return storagePath;
   },
 
-  /** Public helper if you ever need a signed URL for a full source image. */
+  /**
+   * Same story as getPatchSignedUrl. Note images.storage_path is currently
+   * NULL for every row -- this batch only uploaded patches to R2, not full
+   * source images -- so this will return null/undefined until that changes.
+   */
   async getImageSignedUrl(storagePath) {
-    const { data, error } = await supabase.storage
-      .from(IMAGE_BUCKET)
-      .createSignedUrl(storagePath, SIGNED_URL_TTL_SECONDS);
-    if (error) throw new Error(`Failed to sign image URL: ${error.message}`);
-    return data.signedUrl;
+    return storagePath;
   },
 };
