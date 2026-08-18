@@ -116,7 +116,7 @@ function DashboardPage() {
               </p>
             </div>
             <Button variant="primary" size="lg" onClick={() => navigate('/annotate')} disabled={!readyToAnnotate}>
-              {readyToAnnotate ? 'Start / resume annotating →' : 'Nothing to annotate'}
+              {readyToAnnotate ? 'Start / resume annotating' : 'Nothing to annotate'}
             </Button>
           </div>
 
@@ -153,7 +153,7 @@ function DashboardPage() {
             <div className="flex items-center justify-between mb-3">
               <h2 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">Your recent annotations</h2>
               <button onClick={() => navigate('/history')} className="text-xs text-emerald-400 hover:text-emerald-300 font-medium">
-                View full history →
+                View full history
               </button>
             </div>
             {recent.length === 0 ? (
