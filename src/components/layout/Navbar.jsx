@@ -53,9 +53,6 @@ function Navbar() {
           )}
           {profile ? (
             <>
-              <span className="hidden sm:inline text-xs text-slate-500 px-2">
-                {profile.first_name || profile.email}
-              </span>
               <button onClick={handleLogout} className={`${baseLink} ${inactiveClasses}`}>
                 Log out
               </button>
