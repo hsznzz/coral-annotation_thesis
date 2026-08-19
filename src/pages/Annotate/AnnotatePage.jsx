@@ -301,9 +301,9 @@ function AnnotatePage() {
                 onClick={goToNext}
                 disabled={loading || saving}
                 className="absolute bottom-6 right-6 z-40 px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Next patch (→)"
+                title="Next patch"
               >
-                {historyIndex < 0 ? 'Next →' : 'Skip →'}
+                {historyIndex < 0 ? 'Next' : 'Skip'}
               </button>
 
               {/* LABELS - BOTTOM CENTER */}
@@ -389,11 +389,11 @@ function AnnotatePage() {
                       ))}
                       <div className="flex justify-between pt-2 border-t border-slate-800 mt-2">
                         <span>Previous patch</span>
-                        <kbd className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-xs">←</kbd>
+                        <kbd className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-xs"></kbd>
                       </div>
                       <div className="flex justify-between">
                         <span>Next / skip patch</span>
-                        <kbd className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-xs">→</kbd>
+                        <kbd className="px-2 py-0.5 rounded bg-slate-800 border border-slate-700 font-mono text-xs"></kbd>
                       </div>
                       <div className="flex justify-between">
                         <span>Show this help</span>
