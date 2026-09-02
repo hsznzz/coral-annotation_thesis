@@ -90,7 +90,7 @@ function RequestChangeModal({ row, onClose, onSubmitted }) {
 
   return (
     <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50 px-4">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full">
+      <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full max-h-[85vh] overflow-y-auto">
         <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
           <h2 className="text-sm sm:text-base font-semibold text-slate-100">Request a label change</h2>
           <button onClick={onClose} className="text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label="Close">
@@ -331,7 +331,7 @@ function HistoryPage() {
         )}
       </div>
 
-      <div className="border border-slate-700 rounded-lg overflow-hidden">
+      <div className="border border-slate-700 rounded-lg overflow-x-auto">
         <table className="w-full text-sm">
           <thead className="bg-slate-800 text-slate-400 text-xs uppercase">
             <tr>

@@ -23,9 +23,27 @@
     @apply bg-slate-900 text-slate-100 antialiased;
     overflow-x: hidden;
     overflow-y: auto;
+    /* Stops Safari's rubber-band bounce at the top/bottom of the page from
+       revealing blank space behind fixed-position screens like /annotate. */
+    overscroll-behavior-y: none;
   }
 
   html {
     scroll-behavior: smooth;
+    /* iOS Safari auto-inflates font sizes on rotation unless told not to. */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  /* iOS Safari force-zooms the whole page when a focused form control's
+     computed font-size is under 16px — true regardless of which Tailwind
+     text-size utility a given input/select/textarea was given elsewhere.
+     Fixing it here once is more reliable than hunting down every input's
+     className across LoginPage, HistoryPage, AdminPage, and the modals. */
+  @media screen and (max-width: 767px) {
+    input,
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
   }
 }

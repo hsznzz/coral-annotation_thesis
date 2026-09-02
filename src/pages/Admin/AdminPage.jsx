@@ -316,7 +316,7 @@ function AdminPage() {
         ) : pendingRequests.length === 0 ? (
           <p className="text-sm text-slate-500">No pending requests right now.</p>
         ) : (
-          <div className="border border-slate-700 rounded-lg overflow-hidden">
+          <div className="border border-slate-700 rounded-lg overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-800 text-slate-400 text-xs uppercase">
                 <tr>
@@ -415,7 +415,7 @@ function AdminPage() {
         </div>
 
         {/* Table */}
-        <div className="border border-slate-700 rounded-lg overflow-hidden">
+        <div className="border border-slate-700 rounded-lg overflow-x-auto">
           <table className="w-full text-sm">
             <thead className="bg-slate-800 text-slate-400 text-xs uppercase">
               <tr>
@@ -549,7 +549,7 @@ function AdminPage() {
         {usersLoading ? (
           <Spinner />
         ) : (
-          <div className="border border-slate-700 rounded-lg overflow-hidden">
+          <div className="border border-slate-700 rounded-lg overflow-x-auto">
             <table className="w-full text-sm">
               <thead className="bg-slate-800 text-slate-400 text-xs uppercase">
                 <tr>

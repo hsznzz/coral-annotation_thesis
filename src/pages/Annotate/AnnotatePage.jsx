@@ -255,61 +255,81 @@ function AnnotatePage() {
                 </TransformComponent>
               </div>
 
-              {/* ZOOM CONTROLS - TOP LEFT */}
-              <div className="absolute top-4 left-4 z-50 flex gap-2">
-                <button onClick={() => zoomIn()} className="px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/60" title="Zoom in">
-                  🔍+
-                </button>
-                <button onClick={() => canZoomOut && zoomOut()} disabled={!canZoomOut} className="px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed" title="Zoom out">
-                  🔍−
-                </button>
-                <button onClick={() => resetTransform()} className="px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/60" title="Reset view">
-                  ↺
-                </button>
-              </div>
-
-              {/* TOP-RIGHT: OPTIONS + IMAGE INFO + SHORTCUTS */}
-              <div className="absolute top-4 right-4 z-50 flex items-center gap-2">
-                <button onClick={() => setIsShortcutsOpen(true)} className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-200 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-600/70" title="Keyboard shortcuts (?)">
-                  ⌨ Shortcuts
-                </button>
-                <button onClick={() => setIsImageInfoOpen(true)} className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium text-emerald-200 bg-slate-900/40 hover:bg-slate-900/60 border border-emerald-500/60" title="View image metadata">
-                  Image Info
-                </button>
-                <button onClick={() => setIsOptionsOpen(true)} className="px-3 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-200 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-600/70" title="Options">
-                  Options
-                </button>
-              </div>
-
-              {/* PROGRESS - TOP CENTER */}
-              <div className="absolute top-4 left-1/2 -translate-x-1/2 z-40 w-64 sm:w-80 px-4 py-2 rounded-lg bg-slate-900/50 border border-slate-700/70 backdrop-blur-sm">
-                <ProgressBar progress={progress} compact scopeLabel={isAdmin ? 'Project progress' : 'Your progress'} />
-              </div>
-
-              {/* PREVIOUS - BOTTOM LEFT */}
-              <button
-                onClick={goToPrevious}
-                disabled={!canGoPrevious || loading || saving}
-                className="absolute bottom-6 left-6 z-40 px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Previous patch (←)"
+              {/* TOP BAR — one flex row (wraps below sm:) instead of three
+                  separately-positioned islands, so it can never overflow a
+                  narrow screen. pointer-events-none on the wrapper + auto
+                  on each group keeps the empty space between them
+                  pass-through for panning/zooming the image underneath. */}
+              <div
+                className="absolute top-0 left-0 right-0 z-50 px-3 sm:px-4 pointer-events-none"
+                style={{ paddingTop: 'max(0.75rem, env(safe-area-inset-top))' }}
               >
-                ← Previous
-              </button>
+                <div className="flex flex-wrap sm:flex-nowrap items-center justify-between gap-2">
+                  <div className="flex gap-2 pointer-events-auto order-1">
+                    <button onClick={() => zoomIn()} className="px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/60" title="Zoom in">
+                      🔍+
+                    </button>
+                    <button onClick={() => canZoomOut && zoomOut()} disabled={!canZoomOut} className="px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/60 disabled:opacity-40 disabled:cursor-not-allowed" title="Zoom out">
+                      🔍−
+                    </button>
+                    <button onClick={() => resetTransform()} className="px-2 py-1.5 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/60" title="Reset view">
+                      ↺
+                    </button>
+                  </div>
 
-              {/* NEXT - BOTTOM RIGHT */}
-              <button
-                onClick={goToNext}
-                disabled={loading || saving}
-                className="absolute bottom-6 right-6 z-40 px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Next patch"
+                  <div className="order-3 sm:order-2 w-full sm:w-auto sm:flex-1 flex justify-center pointer-events-auto">
+                    <div className="w-full max-w-[260px] sm:max-w-xs md:max-w-sm px-4 py-2 rounded-lg bg-slate-900/50 border border-slate-700/70 backdrop-blur-sm">
+                      <ProgressBar progress={progress} compact scopeLabel={isAdmin ? 'Project progress' : 'Your progress'} />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 sm:gap-2 pointer-events-auto order-2 sm:order-3">
+                    <button onClick={() => setIsShortcutsOpen(true)} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-slate-200 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-600/70" title="Keyboard shortcuts (?)">
+                      ⌨<span className="hidden sm:inline"> Shortcuts</span>
+                    </button>
+                    <button onClick={() => setIsImageInfoOpen(true)} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-emerald-200 bg-slate-900/40 hover:bg-slate-900/60 border border-emerald-500/60" title="View image metadata">
+                      <span className="sm:hidden">ℹ</span><span className="hidden sm:inline">Image Info</span>
+                    </button>
+                    <button onClick={() => setIsOptionsOpen(true)} className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-md text-xs sm:text-sm font-medium text-slate-200 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-600/70" title="Options">
+                      <span className="sm:hidden">⚙</span><span className="hidden sm:inline">Options</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              {/* BOTTOM BAR — Previous / Labels / Skip as one flex row.
+                  flex-1 + min-w-0 on the middle wrapper is what actually
+                  prevents the label strip from ever overlapping the corner
+                  buttons, at any screen width — it can only occupy
+                  whatever space Previous/Skip don't need. */}
+              <div
+                className="absolute left-0 right-0 bottom-0 z-40 px-3 sm:px-4 pointer-events-none"
+                style={{ paddingBottom: 'max(0.75rem, env(safe-area-inset-bottom))' }}
               >
-                {historyIndex < 0 ? 'Next' : 'Skip'}
-              </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    onClick={goToPrevious}
+                    disabled={!canGoPrevious || loading || saving}
+                    className="shrink-0 pointer-events-auto px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Previous patch (←)"
+                  >
+                    ←<span className="hidden sm:inline"> Previous</span>
+                  </button>
 
-              {/* LABELS - BOTTOM CENTER */}
-              <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-40 flex justify-center px-4 max-w-[95vw]">
-                <div className="px-3 py-2.5 rounded-2xl bg-slate-900/30 border border-slate-700/60 backdrop-blur-sm">
-                  <LabelButtons disabled={saving} currentLabel={currentLabel} onSelect={handleLabel} />
+                  <div className="flex-1 min-w-0 flex justify-center pointer-events-auto">
+                    <div className="max-w-full px-3 py-2.5 rounded-2xl bg-slate-900/30 border border-slate-700/60 backdrop-blur-sm">
+                      <LabelButtons disabled={saving} currentLabel={currentLabel} onSelect={handleLabel} />
+                    </div>
+                  </div>
+
+                  <button
+                    onClick={goToNext}
+                    disabled={loading || saving}
+                    className="shrink-0 pointer-events-auto px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium text-slate-100 bg-slate-900/40 hover:bg-slate-900/60 border border-slate-700/70 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Next patch"
+                  >
+                    <span className="hidden sm:inline">{historyIndex < 0 ? 'Next' : 'Skip'} </span>→
+                  </button>
                 </div>
               </div>
 
@@ -326,7 +346,7 @@ function AnnotatePage() {
               {/* OTHER / NOT CORAL MODAL */}
               {isOtherModalOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4">
+                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
                       <h2 className="text-sm sm:text-base font-semibold text-slate-100">Not Coral / Other</h2>
                       <button onClick={() => setIsOtherModalOpen(false)} className="text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label="Close">
@@ -371,7 +391,7 @@ function AnnotatePage() {
               {/* SHORTCUTS HELP MODAL */}
               {isShortcutsOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4">
+                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
                       <h2 className="text-sm sm:text-base font-semibold text-slate-100">Keyboard Shortcuts</h2>
                       <button onClick={() => setIsShortcutsOpen(false)} className="text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label="Close shortcuts">
@@ -407,7 +427,7 @@ function AnnotatePage() {
               {/* OPTIONS MODAL */}
               {isOptionsOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4">
+                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
                       <h2 className="text-sm sm:text-base font-semibold text-slate-100">Options</h2>
                       <button onClick={() => setIsOptionsOpen(false)} className="text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label="Close options">
@@ -455,7 +475,7 @@ function AnnotatePage() {
               {/* IMAGE INFO MODAL */}
               {isImageInfoOpen && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-lg w-full mx-4">
+                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 max-h-[85vh] overflow-y-auto">
                     <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
                       <h2 className="text-sm sm:text-base font-semibold text-slate-100">Image Information</h2>
                       <button onClick={() => setIsImageInfoOpen(false)} className="text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label="Close image info">
