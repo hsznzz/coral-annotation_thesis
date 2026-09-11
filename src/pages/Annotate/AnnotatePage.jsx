@@ -9,7 +9,7 @@ import ProgressBar from '../../components/annotation/ProgressBar.jsx';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { useAnnotationFlow } from '../../hooks/useAnnotationFlow.js';
 import { annotationsApi } from '../../api/annotationsApi.js';
-import { ALL_LABELS, LABEL_TEXT, SHORTCUT_TO_LABEL } from '../../constants/labels.js';
+import { ALL_LABELS, LABEL_TEXT, OTHER_NOTE, SHORTCUT_TO_LABEL } from '../../constants/labels.js';
 
 // Patches often fill the whole frame at 1:1, which reads as "too zoomed
 // in" the instant the page loads. Starting a little zoomed OUT (with room
@@ -41,9 +41,6 @@ function AnnotatePage() {
   const [isOptionsOpen, setIsOptionsOpen] = useState(false);
   const [isImageInfoOpen, setIsImageInfoOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
-  const [otherNote, setOtherNote] = useState('');
-  const [isOtherModalOpen, setIsOtherModalOpen] = useState(false);
-  const [otherError, setOtherError] = useState('');
 
   // Cache of patchId -> saved label, filled in lazily so re-visiting an
   // already-annotated patch (via "Previous") highlights its current label.
@@ -72,7 +69,7 @@ function AnnotatePage() {
   const currentLabel =
     currentPatch?.status === 'annotated' ? labelCache[currentPatch.id] ?? null : null;
 
-  const anyModalOpen = isOptionsOpen || isImageInfoOpen || isShortcutsOpen || isOtherModalOpen;
+  const anyModalOpen = isOptionsOpen || isImageInfoOpen || isShortcutsOpen;
 
   const handleLogout = async () => {
     await logout();
@@ -81,25 +78,10 @@ function AnnotatePage() {
 
   const handleLabel = useCallback(
     async (labelKey) => {
-      if (labelKey === 'OTHER') {
-        setOtherNote('');
-        setOtherError('');
-        setIsOtherModalOpen(true);
-        return;
-      }
-      await submitLabel(labelKey);
+      await submitLabel(labelKey, labelKey === 'OTHER' ? OTHER_NOTE : null);
     },
     [submitLabel]
   );
-
-  const confirmOther = async () => {
-    if (!otherNote.trim()) {
-      setOtherError('Please describe what this patch actually shows.');
-      return;
-    }
-    setIsOtherModalOpen(false);
-    await submitLabel('OTHER', otherNote.trim());
-  };
 
   // --- Keyboard shortcuts -----------------------------------------------
   // 1-4: coral labels, 5: Other, ←/→: previous/next, ?: shortcuts help, Esc: close modals.
@@ -112,7 +94,6 @@ function AnnotatePage() {
         setIsOptionsOpen(false);
         setIsImageInfoOpen(false);
         setIsShortcutsOpen(false);
-        setIsOtherModalOpen(false);
         return;
       }
 
@@ -339,51 +320,6 @@ function AnnotatePage() {
                   <div className="bg-slate-900/70 border border-slate-700 rounded-lg p-6">
                     <Spinner size="lg" className="mx-auto mb-2" />
                     <p className="text-slate-200 text-sm">{saving ? 'Saving...' : 'Loading...'}</p>
-                  </div>
-                </div>
-              )}
-
-              {/* OTHER / NOT CORAL MODAL */}
-              {isOtherModalOpen && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/50">
-                  <div className="bg-slate-900 border border-slate-700 rounded-xl shadow-2xl max-w-sm w-full mx-4 max-h-[85vh] overflow-y-auto">
-                    <div className="flex items-center justify-between px-4 py-3 border-b border-slate-800">
-                      <h2 className="text-sm sm:text-base font-semibold text-slate-100">Not Coral / Other</h2>
-                      <button onClick={() => setIsOtherModalOpen(false)} className="text-slate-400 hover:text-slate-200 text-lg leading-none" aria-label="Close">
-                        ×
-                      </button>
-                    </div>
-                    <div className="px-4 py-4 space-y-3">
-                      <p className="text-xs sm:text-sm text-slate-400">
-                        What does this patch actually show? (e.g. sand, rock, sponge, fish)
-                      </p>
-                      <textarea
-                        autoFocus
-                        value={otherNote}
-                        onChange={(e) => {
-                          setOtherNote(e.target.value);
-                          if (otherError) setOtherError('');
-                        }}
-                        rows={3}
-                        placeholder="Describe what's shown..."
-                        className="w-full rounded-md bg-slate-800 border border-slate-700 px-3 py-2 text-sm text-slate-100 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-                      />
-                      {otherError && <p className="text-xs text-red-400">{otherError}</p>}
-                      <div className="flex gap-2 justify-end pt-1">
-                        <button
-                          onClick={() => setIsOtherModalOpen(false)}
-                          className="px-4 py-2 rounded-md text-sm text-slate-300 hover:bg-slate-800"
-                        >
-                          Cancel
-                        </button>
-                        <button
-                          onClick={confirmOther}
-                          className="px-4 py-2 rounded-md text-sm font-medium bg-emerald-600 hover:bg-emerald-500 text-white"
-                        >
-                          Save
-                        </button>
-                      </div>
-                    </div>
                   </div>
                 </div>
               )}
