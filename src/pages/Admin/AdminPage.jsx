@@ -7,6 +7,7 @@ import { annotationsApi } from '../../api/annotationsApi.js';
 import { patchesApi } from '../../api/patchesApi.js';
 import { changeRequestsApi } from '../../api/changeRequestsApi.js';
 import { authService } from '../../api/services/authService.js';
+import { supabase } from '../../api/supabaseClient.js';
 import { useAuth } from '../../context/AuthContext.jsx';
 import { ALL_LABELS, LABEL_TEXT } from '../../constants/labels.js';
 
@@ -108,6 +109,23 @@ function AdminPage() {
     loadUsers();
     loadPendingRequests();
   }, [loadStats, loadUsers, loadPendingRequests]);
+
+  useEffect(() => {
+    const channel = supabase
+      .channel('admin-annotation-stats')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'annotations' },
+        () => {
+          loadStats();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [loadStats]);
 
   useEffect(() => {
     loadRows();

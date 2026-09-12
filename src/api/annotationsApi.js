@@ -99,17 +99,23 @@ export const annotationsApi = {
 
   /** Stats used by both the progress bar and the admin dashboard. */
   async getStats() {
-    const { data, error } = await supabase.from('annotations').select('label, annotator_id');
-    if (error) throw new Error(`Failed to load stats: ${error.message}`);
-
     const byLabel = { LC: 0, PB: 0, DC: 0, DCA: 0, OTHER: 0 };
-    const byAnnotator = {};
-    for (const row of data || []) {
-      if (byLabel[row.label] != null) byLabel[row.label] += 1;
-      byAnnotator[row.annotator_id] = (byAnnotator[row.annotator_id] || 0) + 1;
+    const labels = Object.keys(byLabel);
+    const [{ count: totalAnnotations, error: totalError }, ...labelResults] = await Promise.all([
+      supabase.from('annotations').select('*', { count: 'exact', head: true }),
+      ...labels.map((label) =>
+        supabase.from('annotations').select('*', { count: 'exact', head: true }).eq('label', label)
+      ),
+    ]);
+
+    if (totalError) throw new Error(`Failed to load stats: ${totalError.message}`);
+    for (let index = 0; index < labels.length; index++) {
+      const { count, error } = labelResults[index];
+      if (error) throw new Error(`Failed to load ${labels[index]} stats: ${error.message}`);
+      byLabel[labels[index]] = count || 0;
     }
 
-    return { byLabel, byAnnotator, totalAnnotations: data?.length || 0 };
+    return { byLabel, totalAnnotations: totalAnnotations || 0 };
   },
 
   /**

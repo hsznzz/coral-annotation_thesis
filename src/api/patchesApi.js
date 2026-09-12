@@ -1,5 +1,24 @@
 import { supabase } from './supabaseClient.js';
 
+async function getAnnotationLabelCounts(annotatorId = null) {
+  const labels = ['LC', 'PB', 'DC', 'DCA', 'OTHER'];
+  const results = await Promise.all(
+    labels.map((label) => {
+      let query = supabase.from('annotations').select('*', { count: 'exact', head: true }).eq('label', label);
+      if (annotatorId) query = query.eq('annotator_id', annotatorId);
+      return query;
+    })
+  );
+
+  const counts = {};
+  for (let index = 0; index < labels.length; index++) {
+    const { count, error } = results[index];
+    if (error) throw new Error(`Failed to load ${labels[index]} label count: ${error.message}`);
+    counts[labels[index]] = count || 0;
+  }
+  return counts;
+}
+
 /**
  * Attach the patch's already-public R2 URL, plus the parent image's
  * metadata, to a raw patch row.
@@ -100,15 +119,7 @@ export const patchesApi = {
       .eq('status', 'annotated');
     if (annotatedError) throw new Error(`Failed to load progress: ${annotatedError.message}`);
  
-    const { data: labelRows, error: labelError } = await supabase
-      .from('annotations')
-      .select('label');
-    if (labelError) throw new Error(`Failed to load label counts: ${labelError.message}`);
- 
-    const counts = { LC: 0, PB: 0, DC: 0, DCA: 0 };
-    for (const row of labelRows || []) {
-      if (counts[row.label] != null) counts[row.label] += 1;
-    }
+    const counts = await getAnnotationLabelCounts();
  
     return {
       total: total || 0,
@@ -146,19 +157,8 @@ export const patchesApi = {
       .eq('status', 'annotated');
     if (annotatedError) throw new Error(`Failed to load your progress: ${annotatedError.message}`);
  
-    // Scoped to labels THIS annotator has personally submitted -- matches
-    // getProgress()'s shape below, but filtered instead of project-wide, so
-    // ProgressBar.jsx can render either one with no changes to itself.
-    const { data: labelRows, error: labelError } = await supabase
-      .from('annotations')
-      .select('label')
-      .eq('annotator_id', annotatorId);
-    if (labelError) throw new Error(`Failed to load your label counts: ${labelError.message}`);
- 
-    const counts = { LC: 0, PB: 0, DC: 0, DCA: 0 };
-    for (const row of labelRows || []) {
-      if (counts[row.label] != null) counts[row.label] += 1;
-    }
+    // Scoped to labels THIS annotator has personally submitted.
+    const counts = await getAnnotationLabelCounts(annotatorId);
  
     return {
       total: total || 0,
