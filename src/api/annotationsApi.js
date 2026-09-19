@@ -121,6 +121,16 @@ export const annotationsApi = {
   /**
    * Export every annotation (joined with patch/image info) as a CSV
    * string, ready to hand to a Blob download.
+   *
+   * FIX (Phase 2 patch-locating bug): this previously selected only
+   * `patches: ( id, patch_index, image_id, images: ( filename ) )` — it
+   * never selected `patch_relpath` or `storage_path`, so the exported CSV
+   * had no way to point back to an actual patch file, local or remote.
+   * `patch_relpath` mirrors the relative path already used in
+   * `patches_manifest_refined.csv` (Refined-Patches/...), and
+   * `storage_path` is the full public R2 URL — either one alone is enough
+   * to locate the file; both are included so the Phase 2 organize script
+   * can prefer a local copy and fall back to R2 without a second export.
    */
   async exportCsv() {
     const { data, error } = await supabase
@@ -128,7 +138,7 @@ export const annotationsApi = {
       .select(
         `
         id, label, note, created_at, updated_at, annotator_id,
-        patches:patch_id ( id, patch_index, image_id,
+        patches:patch_id ( id, patch_index, image_id, patch_relpath, storage_path,
           images:image_id ( filename ) )
       `
       )
@@ -147,6 +157,8 @@ export const annotationsApi = {
       'annotator_id',
       'created_at',
       'updated_at',
+      'patch_relpath',
+      'storage_path',
     ];
 
     const escapeCsv = (val) => {
@@ -168,6 +180,8 @@ export const annotationsApi = {
           row.annotator_id,
           row.created_at,
           row.updated_at,
+          row.patches?.patch_relpath,
+          row.patches?.storage_path,
         ]
           .map(escapeCsv)
           .join(',')
